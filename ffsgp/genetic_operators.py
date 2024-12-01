@@ -27,7 +27,7 @@ def crossover_subtree(parent1: Tree, parent2: Tree) -> Tuple[Tree, Tree]:
 
     # Generate the new offspring by swapping the subtrees
     off1 = np.concatenate((parent1.data[:p1 - len1 + 1], parent2.data[p2 - len2 + 1:p2 + 1], parent1.data[p1 + 1:]))
-    off2 = np.concatenate((parent2.data[:p2 - len2 + 1], parent1.data[p1 - len1 + 1:p1 + 1], parent2.data[p2 + 1:])) 
+    off2 = np.concatenate((parent2.data[:p2 - len2 + 1], parent1.data[p1 - len1 + 1:p1 + 1], parent2.data[p2 + 1:]))
 
     # Return the childs in the proper type
     return Tree(data=off1), Tree(data=off2)
@@ -87,13 +87,15 @@ def mutation_subtree(individual: Tree) -> None:
 
 
 def _rec_create_full(max_vars: np.int64, max_depth: np.int64) -> NDArray[Node]:
-    if max_depth == 1:
+    """Inner recursion function"""
+    if max_depth <= 1:
         # Choose from terminal set
-        if np.random.random() < 0.5:
-            return np.array([Node(Var(np.random.randint(0, max_vars))).numpy()])  # Variable
-        else:
-            return np.array([Node(np.random.normal(1, 1)).numpy()])  # Constant (biased toward positive)
-    
+        if np.random.random() < 0.5:  # Variable
+            return np.array([Node(Var(np.random.randint(0, max_vars))).numpy()])
+        else:  # Constant
+            # Biased toward positive: N(1,1)
+            return np.array([Node(np.random.normal(1, 1)).numpy()])
+
     # Choose from operators set
     operator = np.random.randint(0, NUM_OP)
     op_to_arr = np.array([Node(Op(operator)).numpy()])
@@ -103,14 +105,35 @@ def _rec_create_full(max_vars: np.int64, max_depth: np.int64) -> NDArray[Node]:
         return np.concatenate((_rec_create_full(max_vars, max_depth - 1), _rec_create_full(max_vars, max_depth - 1), op_to_arr))
 
 
-def _rec_create_grow(max_vars: np.int64, max_depth: np.int64, max_length: np.int64) -> NDArray[Node]:
-    # TODO
-    pass
+def _rec_create_grow(max_vars: np.int64, max_depth: np.int64, max_length: np.int64, p_term: float = 0.5) -> NDArray[Node]:
+    """Inner recursion function"""
+    if max_depth <= 1 or max_length <= 1 or np.random.random() < p_term:
+        # Choose from terminal set
+        if np.random.random() < 0.5:  # Variable
+            return np.array([Node(Var(np.random.randint(0, max_vars))).numpy()])
+        else:  # Constant
+            # Biased toward positive: N(1,1)
+            return np.array([Node(np.random.normal(1, 1)).numpy()])
+    else:  # Operator
+        operator = np.random.randint(0, NUM_OP)
+        op_to_arr = np.array([Node(Op(operator)).numpy()])
+        if Op.arity(operator) == 1:
+            return np.concatenate((_rec_create_grow(max_vars, max_depth - 1, max_length - 1, p_term), op_to_arr))
+        else:
+            subtree1 = _rec_create_grow(max_vars, max_depth - 1, max_length - 1, p_term)
+            subtree2 = _rec_create_grow(max_vars, max_depth - 1, max_length - subtree1.size - 1, p_term)
+
+            # Randomize order to reduce bias, otherwise the left subtree
+            # (the first one to be generated) is statistically bigger.
+            if np.random.random() < 0.5:
+                return np.concatenate((subtree1, subtree2, op_to_arr))
+            else:
+                return np.concatenate((subtree2, subtree1, op_to_arr))
 
 
 def create_full(max_vars: np.int64, max_depth: np.int64) -> Tree:
     """
-    Generate subtree using the Full Method.
+    Generate a subtree using the Full Method.
     """
     if max_depth == 0:
         raise ValueError(f"Depth must be greater than 0! Got {max_depth}")
@@ -118,6 +141,21 @@ def create_full(max_vars: np.int64, max_depth: np.int64) -> Tree:
     return Tree(data=_rec_create_full(max_vars, max_depth))
 
 
-# TODO: generate subtree using grow method (give max depth + max length)
-def create_grow(max_vars: np.int64, max_depth: np.int64, max_length: np.int64) -> Tree:
-    pass
+def create_grow(max_vars: np.int64, max_depth: np.int64, max_length: np.int64, p_term: float = 0.5) -> Tree:
+    """
+    Generate a subtree using the Grow Method.
+
+    p_term: the probability to select the node from the terminal set
+
+    Note: max_length is not strictly enforced.
+          When the creation function exhausts the "length budget",
+          any remaining open nodes are filled with terminal states.
+          As a result, the generated trees may slightly exceed max_length.
+    """
+    if max_depth == 0:
+        raise ValueError(f"Depth must be greater than 0! Got {max_depth}")
+
+    if max_length == 0:
+        raise ValueError(f"Length must be greater than 0! Got {max_length}")
+
+    return Tree(data=_rec_create_grow(max_vars, max_depth, max_length, p_term))
