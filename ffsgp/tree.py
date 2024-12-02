@@ -34,7 +34,13 @@ class Tree:
         for n in self.data:
             stack.append(Node.call(n, stack, vvars))
 
-        return stack[0]
+        if (vvars is None) or (vvars.ndim == 1) or (isinstance(stack[0], np.ndarray)):
+            return stack[0]
+        else:
+            # If we return a single value when we evaluated on multiple points
+            # convert the result to match the input shape.
+            # This happens when the formula is constant, because there is no broadcasting.
+            return np.full_like(vvars[0], stack[0])
 
     def __eq__(self, other: "Tree") -> bool:
         return np.array_equal(self.data, other.data)
