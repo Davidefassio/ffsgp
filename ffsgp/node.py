@@ -42,6 +42,9 @@ class Node:
 
     @staticmethod
     def call(this, stack: list[NDArray[np.float64]], vvars: NDArray[np.float64] | None) -> NDArray[np.float64]:
+        """
+        Evaluate the value of this Node.
+        """
         if this['f'] >= 0:
             retval = Op.call(this['f'], *stack[-this['arity']:])
             del stack[-this['arity']:]
@@ -54,6 +57,9 @@ class Node:
 
     @staticmethod
     def to_human(this, stack: list[str]) -> str:
+        """
+        Provide human readable, and python executable, representation of this Node.
+        """
         if this['f'] >= 0:
             retval, idxs = Op.to_human(this['f'])
             if this['arity'] == 1:
@@ -68,4 +74,7 @@ class Node:
             return f"{this['value']}"
 
     def numpy(self) -> NDArray["Node"]:
+        """
+        Convert this Node to a numpy dtype.
+        """
         return np.array((self.f, self.name, self.value, self.arity, self.length, self.depth), dtype=Node.dtype)
