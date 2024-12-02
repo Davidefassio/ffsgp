@@ -60,6 +60,30 @@ class Op:
             case _:
                 raise f"Unknown function {idx}!"
 
+    @staticmethod
+    def to_human(idx: np.int64) -> tuple[str, list[int]]:
+        match idx:
+            case 0:
+                return "np.log(np.abs())", [-2]
+            case 1:
+                return "np.sin()", [-1]
+            case 2:
+                return "np.cos()", [-1]
+            case 3:
+                return "np.abs()", [-1]
+            case 4:
+                return "np.add(,)", [-2, -1]
+            case 5:
+                return "np.subtract(,)", [-2, -1]
+            case 6:
+                return "np.multiply(,)", [-2, -1]
+            case 7:
+                return "np.divide(,)", [-2, -1]
+            case 8:
+                return "np.pow(,)", [-2, -1]
+            case _:
+                raise f"Unknown function {idx}!"
+
 
 # Define operators, ordered by arity
 log = Op(0)

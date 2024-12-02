@@ -32,8 +32,16 @@ class Tree:
         return f"{self.data}"
 
     def to_human(self) -> str:
-        # TODO: provide human readable (and python executable) formula
-        pass
+        """
+        Provide human readable, and python executable, formula.
+        """
+        stack = []
+
+        for n in self.data:
+            stack.append(Node.to_human(n, stack))
+
+        return stack[0]
+
 
     @staticmethod
     def update_stats(data: NDArray[Node]) -> None:

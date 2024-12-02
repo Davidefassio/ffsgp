@@ -7,10 +7,9 @@ from .tree import Tree
 
 import numpy as np
 from numpy.typing import NDArray
-from typing import Tuple
 
 
-def crossover_subtree(parent1: Tree, parent2: Tree) -> Tuple[Tree, Tree]:
+def crossover_subtree(parent1: Tree, parent2: Tree) -> tuple[Tree, Tree]:
     """
     Subtree crossover.
 
@@ -45,7 +44,7 @@ def mutation_single_point(individual: Tree, max_vars: np.int64 = 0) -> None:
     # Get type and modify by type
     if individual.data[p]['f'] >= 0:
         # Match the arity
-        if Op.arity(individual.data[p]['f']) == 1:
+        if individual.data[p]['arity'] == 1:
             individual.data[p]['f'] = np.random.randint(0, IDX_TWO_ARITY)
         else:
             individual.data[p]['f'] = np.random.randint(IDX_TWO_ARITY, NUM_OP)

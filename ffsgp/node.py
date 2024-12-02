@@ -51,5 +51,21 @@ class Node:
         else:
             return this['value']
 
+
+    @staticmethod
+    def to_human(this, stack: list[str]) -> str:
+        if this['f'] >= 0:
+            retval, idxs = Op.to_human(this['f'])
+            if this['arity'] == 1:
+                retval = retval[:idxs[0]] + stack[-1] + retval[idxs[0]:]
+            else:
+                retval = retval[:idxs[0]] + stack[-2] + retval[idxs[0]:idxs[1]] + stack[-1] + retval[idxs[1]:]
+            del stack[-this['arity']:]
+            return retval
+        elif this['name'] >= 0:
+            return f"x[{this['name']}]"
+        else:
+            return f"{this['value']}"
+
     def numpy(self) -> NDArray["Node"]:
         return np.array((self.f, self.name, self.value, self.arity, self.length, self.depth), dtype=Node.dtype)
