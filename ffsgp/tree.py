@@ -17,6 +17,7 @@ class Tree:
             Tree.update_stats(self.data)
 
     def __call__(self, vvars: list[np.float64] | None = None) -> np.float64:
+        # TODO: modify vvars to allow to pass multiple data points
         stack = []
 
         for n in self.data:
@@ -29,6 +30,10 @@ class Tree:
 
     def __repr__(self) -> str:
         return f"{self.data}"
+
+    def to_human(self) -> str:
+        # TODO: provide human readable (and python executable) formula
+        pass
 
     @staticmethod
     def update_stats(data: NDArray[Node]) -> None:
