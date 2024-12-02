@@ -1,6 +1,7 @@
 # Fassio's Genetic Programming Toolbox
 
 import numpy as np
+from numpy.typing import NDArray
 
 
 class Op:
@@ -12,7 +13,7 @@ class Op:
         return np.int64(1 if idx < IDX_TWO_ARITY else 2)
 
     @staticmethod
-    def call(idx: np.int64, *args) -> np.float64:
+    def call(idx: np.int64, *args) -> NDArray[np.float64]:
         assert Op.arity(idx) == len(args), f"Wrong number of arguments! Expecting {Op.arity(idx)}, got {len(args)} {args}."
         match idx:
             case 0:

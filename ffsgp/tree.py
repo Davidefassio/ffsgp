@@ -16,8 +16,19 @@ class Tree:
         if update:  # Set length and depth
             Tree.update_stats(self.data)
 
-    def __call__(self, vvars: list[np.float64] | None = None) -> np.float64:
-        # TODO: modify vvars to allow to pass multiple data points
+    def __call__(self, vvars: NDArray[np.float64] | None = None) -> NDArray[np.float64]:
+        """
+        Evaluate the formula at the given point(s).
+
+        vvars is the value of the variables in the formula.
+        There are 3 cases:
+        * None: there are no variables in the formula only constants
+        * vvars 1D array => shape (#vars,): one value for each variable
+        * vvars 2D array => shape (#vars,#points): one row for each variable and one column for each point
+        
+        Note: ALWAYS use the vvars 2D interface for multiple points.
+        It is really fast thanks to NumPy's vectorized computation.
+        """
         stack = []
 
         for n in self.data:
@@ -45,6 +56,9 @@ class Tree:
 
     @staticmethod
     def update_stats(data: NDArray[Node]) -> None:
+        """
+        Recompute the length and depth metrics for each node.
+        """
         lstack = []
         dstack = []
         for i, n in enumerate(data):

@@ -41,7 +41,7 @@ class Node:
         self.depth: np.int64 = depth  # Height of the subtree rooted here
 
     @staticmethod
-    def call(this, stack: list[np.float64], vvars: list[np.float64] | None) -> np.float64:
+    def call(this, stack: list[NDArray[np.float64]], vvars: NDArray[np.float64] | None) -> NDArray[np.float64]:
         if this['f'] >= 0:
             retval = Op.call(this['f'], *stack[-this['arity']:])
             del stack[-this['arity']:]
