@@ -41,7 +41,7 @@ class Node:
         self.depth: np.int64 = depth  # Height of the subtree rooted here
 
     @staticmethod
-    def call(this, stack: list[NDArray[np.float64]], vvars: NDArray[np.float64] | None) -> NDArray[np.float64]:
+    def call(this, stack: list[NDArray[np.float64]], vvars: NDArray[np.float64]) -> NDArray[np.float64]:
         """
         Evaluate the value of this Node.
         """

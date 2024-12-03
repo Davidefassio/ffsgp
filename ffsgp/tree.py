@@ -16,29 +16,28 @@ class Tree:
         if update:  # Set length and depth
             Tree.update_stats(self.data)
 
-    def __call__(self, vvars: NDArray[np.float64] | None = None) -> NDArray[np.float64]:
+    def __call__(self, vvars: NDArray[np.float64]) -> NDArray[np.float64]:
         """
-        Evaluate the formula at the given point(s).
+        Evaluate the formula at the given points.
 
         vvars is the value of the variables in the formula.
-        There are 3 cases:
-        * None: there are no variables in the formula only constants
-        * vvars 1D array => shape (#vars,): one value for each variable
-        * vvars 2D array => shape (#vars,#points): one row for each variable and one column for each point
-        
-        Note: ALWAYS use the vvars 2D interface for multiple points.
-        It is really fast thanks to NumPy's vectorized computation.
+        vvars is a 2D array with shape: (#vars, #points).
+        Example for a function of 2 variable evaluated in 3 points:
+            pt1  pt2  pt2
+        x    0   0.5   1
+        y    0   1.2  -20
+
+        It returns a 1D array with shape: (#points,).
         """
         stack = []
 
         for n in self.data:
             stack.append(Node.call(n, stack, vvars))
 
-        if (vvars is None) or (vvars.ndim == 1) or (isinstance(stack[0], np.ndarray)):
+        if isinstance(stack[0], np.ndarray):
             return stack[0]
         else:
-            # If we return a single value when we evaluated on multiple points
-            # convert the result to match the input shape.
+            # If we got a single value, then convert the result to match the input shape.
             # This happens when the formula is constant, because there is no broadcasting.
             return np.full_like(vvars[0], stack[0])
 
