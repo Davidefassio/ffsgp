@@ -1,4 +1,7 @@
 # Fassio's Genetic Programming Toolbox
+#
+# MIT License
+# Copyright (c) 2024 Davide Fassio
 
 import numpy as np
 

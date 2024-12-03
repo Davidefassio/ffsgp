@@ -1,4 +1,7 @@
 # Fassio's Genetic Programming Toolbox
+#
+# MIT License
+# Copyright (c) 2024 Davide Fassio
 
 from .genetic_operators import create_full, create_grow
 from .tree import Tree

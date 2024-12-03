@@ -1,4 +1,7 @@
 # Fassio's Genetic Programming Toolbox
+#
+# MIT License
+# Copyright (c) 2024 Davide Fassio
 
 from .operators import Op
 from .variables import Var

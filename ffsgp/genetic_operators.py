@@ -1,4 +1,7 @@
 # Fassio's Genetic Programming Toolbox
+#
+# MIT License
+# Copyright (c) 2024 Davide Fassio
 
 from .operators import Op, NUM_OP, IDX_TWO_ARITY
 from .variables import Var
