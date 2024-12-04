@@ -35,7 +35,7 @@ def crossover_subtree(parent1: Tree, parent2: Tree) -> tuple[Tree, Tree]:
     return Tree(data=off1), Tree(data=off2)
 
 
-def mutation_single_point(individual: Tree, max_vars: np.int64 = 0) -> None:
+def mutation_single_point(individual: Tree, max_vars: np.int64) -> None:
     """
     Single-Point Mutation.
 
@@ -70,7 +70,7 @@ def mutation_hoist(individual: Tree) -> None:
     individual.data = individual.data[p - individual.data[p]['length'] + 1:p + 1]
 
 
-def mutation_subtree(individual: Tree) -> None:
+def mutation_subtree(individual: Tree, max_vars: np.int64, p_term: float = 0.5) -> None:
     """
     Subtree mutation.
 
@@ -85,7 +85,7 @@ def mutation_subtree(individual: Tree) -> None:
     l = individual.data[p1]['length']
     d = individual.data[p1]['depth']
 
-    individual.data = Tree.update_stats(np.concatenate((individual.data[:p - l + 1], create_grow(d, l).data, individual.data[p + 1:])))
+    individual.data = Tree.update_stats(np.concatenate((individual.data[:p - l + 1], create_grow(max_vars, d, l, p_term).data, individual.data[p + 1:])))
 
 
 def _rec_create_full(max_vars: np.int64, max_depth: np.int64) -> NDArray[Node]:

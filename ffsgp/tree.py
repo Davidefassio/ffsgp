@@ -18,6 +18,8 @@ class Tree:
 
         if update:  # Set length and depth
             Tree.update_stats(self.data)
+        
+        self.fitness = None
 
     def __call__(self, vvars: NDArray[np.float64]) -> NDArray[np.float64]:
         """
@@ -49,6 +51,14 @@ class Tree:
 
     def __repr__(self) -> str:
         return f"{self.data}"
+
+    @property
+    def length(self) -> np.int64:
+        return self.data[-1]['length']
+
+    @property
+    def depth(self) -> np.int64:
+        return self.data[-1]['depth']
 
     def to_human(self) -> str:
         """
