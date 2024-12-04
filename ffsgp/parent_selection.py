@@ -19,6 +19,6 @@ def tournament(population: list[Tree], n: int = 2, p_fh: float = 0.0) -> Tree:
     """
     knights = np.random.choice(population, size=n)
     if np.random.random() < p_fh:
-        return sorted(knights, key=lambda t: t.length)[0]
+        return min(knights, key=lambda t: t.length)
     else:
-        return sorted(knights, key=lambda t: t.fitness, reverse=True)[0]
+        return max(knights, key=lambda t: t.fitness)
