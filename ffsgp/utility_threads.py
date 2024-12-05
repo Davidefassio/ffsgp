@@ -16,20 +16,18 @@ def get_nthreads(n_jobs: int) -> int:
     """
     total_cores = os.cpu_count()
     if total_cores is None:
-        raise RuntimeError("Unable to determine the number of CPU cores.")
-    
+        return 1  # Fail safe
+
     if n_jobs > 0:
         if n_jobs <= total_cores:
             return n_jobs
         else:
             return total_cores
     elif n_jobs < 0:
-        # Calculate cores to use based on the negative value
         threads = total_cores + n_jobs + 1
         if threads > 0:
             return threads
         else:
             raise ValueError(f"n_jobs={n_jobs} results in a non-positive number of threads ({threads}).")
     else:
-        # Raise an error for invalid n_jobs=0 or other unexpected values
         raise ValueError(f"Invalid value for n_jobs: {n_jobs}. Must be a different from 0.")
