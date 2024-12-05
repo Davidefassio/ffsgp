@@ -10,7 +10,22 @@ To maximize the parallelization capabilities of this package, we recommend using
 
 ## Usage
 
-TODO
+```example.py```
+
+## TODO
+
+A list of things that maybe (denoted by (?)) should be done, but I don't fully know how or which to do:
+
+- [ ] Understand and implement techniques to limit bloat (Note: an individual is "fat" when it exceeds max_depth or max_length). Like :
+  - improve the implementation of create_grow to always stay inside the limits
+  - implement genetic operators that cannot create a fat individual (Operon)
+  - reject fat individual from offspring population (Operon)
+  - be more aggressive with the probability of hoist mutation
+- [ ] Implement some niching strategy to favor diversity
+- [ ] Implement early stopping conditions
+- [ ] Optimize tree ```__call__``` to cache results (?)
+- [ ] Implement other genetic operators (?)
+- [ ] Implement other numpy operators (?)
 
 ## License
 
