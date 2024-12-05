@@ -11,21 +11,21 @@ from threading import Thread
 from queue import Queue
 
 
-def init_pop_full(n: np.int64, max_vars: np.int64, depth: np.int64) -> list[Tree]:
+def init_pop_full(n: np.int64, nvars: np.int64, depth: np.int64) -> list[Tree]:
     """
     Generate the initial population using the Full Method.
     """
-    return [create_full(max_vars, depth) for _ in range(n)]
+    return [create_full(nvars, depth) for _ in range(n)]
 
 
-def init_pop_grow(n: np.int64, max_vars: np.int64, depth: np.int64, length: np.int64, p_term: float = 0.5) -> list[Tree]:
+def init_pop_grow(n: np.int64, nvars: np.int64, depth: np.int64, length: np.int64, p_term: float = 0.5) -> list[Tree]:
     """
     Generate the initial population using the Grow Method.
     """
-    return [create_grow(max_vars, depth, length, p_term) for _ in range(n)]
+    return [create_grow(nvars, depth, length, p_term) for _ in range(n)]
 
 
-def init_pop_half(n: np.int64, max_vars: np.int64, depth: np.int64, length: np.int64, p_term: float = 0.5, n_jobs: int = 1) -> list[Tree]:
+def init_pop_half(n: np.int64, nvars: np.int64, depth: np.int64, length: np.int64, p_term: float = 0.5, n_jobs: int = 1) -> list[Tree]:
     """
     Generate the initial population using the Half-and-Half Method.
 
@@ -33,11 +33,11 @@ def init_pop_half(n: np.int64, max_vars: np.int64, depth: np.int64, length: np.i
     Note: If n is odd, then generate one more with the Full Method.
     """
     if n_jobs == 1:
-        return init_pop_full(n // 2 + n % 2, max_vars, depth) + init_pop_grow(n // 2, max_vars, depth, length, p_term)
+        return init_pop_full(n // 2 + n % 2, nvars, depth) + init_pop_grow(n // 2, nvars, depth, length, p_term)
     else:
         result_queue = Queue()
-        t1 = Thread(target=lambda rq, *args: rq.put(init_pop_full(*args)), args=(result_queue, n // 2 + n % 2, max_vars, depth))
-        t2 = Thread(target=lambda rq, *args: rq.put(init_pop_grow(*args)), args=(result_queue, n // 2, max_vars, depth, length, p_term))
+        t1 = Thread(target=lambda rq, *args: rq.put(init_pop_full(*args)), args=(result_queue, n // 2 + n % 2, nvars, depth))
+        t2 = Thread(target=lambda rq, *args: rq.put(init_pop_grow(*args)), args=(result_queue, n // 2, nvars, depth, length, p_term))
         t1.start()
         t2.start()
         t1.join()
@@ -45,7 +45,7 @@ def init_pop_half(n: np.int64, max_vars: np.int64, depth: np.int64, length: np.i
         return result_queue.get() + result_queue.get()
 
 
-def init_pop_ramp(n: np.int64, max_vars: np.int64, depth: np.int64, length: np.int64, p_term: float = 0.5) -> list[Tree]:
+def init_pop_ramp(n: np.int64, nvars: np.int64, depth: np.int64, length: np.int64, p_term: float = 0.5) -> list[Tree]:
     """
     Generate the initial population using the Ramped Half-and-Half Method.
 
@@ -57,9 +57,9 @@ def init_pop_ramp(n: np.int64, max_vars: np.int64, depth: np.int64, length: np.i
 
     while len(population) < n:
         if np.random.random() < 0.5:
-            tree = create_full(max_vars, depth)
+            tree = create_full(nvars, depth)
         else:
-            tree = create_grow(max_vars, depth, length, p_term)
+            tree = create_grow(nvars, depth, length, p_term)
         
         if tree not in population:
             population.append(tree)

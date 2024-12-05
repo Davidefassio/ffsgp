@@ -74,6 +74,11 @@ class Trainer:
         f = self.fitness(self.y, t(self.x))
         t.fitness = (f if not np.isnan(f) else -np.inf, -t.length)
 
+    # TODO: fix
+    #   se non faccio il xover muto un solo parent
+    #   se non faccio il xover devo copiare il parent
+    #   se faccio il xover probabilità diversa di fare mutation ciascuno
+    #   se non faccio nulla passo il parent alla generazione successiva
     def variationAnd(self) -> None:
         """Given a population apply xover AND mutation with prob p_xo p_mut"""
         offspring = []
@@ -105,6 +110,9 @@ class Trainer:
 
         self.new_offspring_queue.put(offspring)
 
+    # TODO: fix
+    #   permettere alle sum prob di essere <= 1
+    #   se non faccio nulla passo il parent alla generazione successiva
     def variationOr(self) -> None:
         """Given a population apply xover or mutation with prob p_xo p_mut"""
         assert sum(self.probs_crossover + self.probs_mutation) == 1, f"In 'varOr' probabilities must sum to 1! Got {self.probs_crossover} and {self.probs_mutation} (sum: {sum(self.probs_crossover + self.probs_mutation)})"

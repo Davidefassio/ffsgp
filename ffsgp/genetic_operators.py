@@ -35,7 +35,7 @@ def crossover_subtree(parent1: Tree, parent2: Tree) -> tuple[Tree, Tree]:
     return Tree(data=off1), Tree(data=off2)
 
 
-def mutation_single_point(individual: Tree, max_vars: np.int64) -> None:
+def mutation_single_point(individual: Tree, nvars: np.int64) -> None:
     """
     Single-Point Mutation.
 
@@ -52,7 +52,7 @@ def mutation_single_point(individual: Tree, max_vars: np.int64) -> None:
         else:
             individual.data[p]['f'] = np.random.randint(IDX_TWO_ARITY, NUM_OP)
     elif individual.data[p]['name'] >= 0:
-        individual.data[p]['name'] = np.random.randint(0, max_vars)
+        individual.data[p]['name'] = np.random.randint(0, nvars)
     else:
         individual.data[p]['value'] += np.random.normal()
 
@@ -70,7 +70,7 @@ def mutation_hoist(individual: Tree) -> None:
     individual.data = individual.data[p - individual.data[p]['length'] + 1:p + 1]
 
 
-def mutation_subtree(individual: Tree, max_vars: np.int64, p_term: float = 0.5) -> None:
+def mutation_subtree(individual: Tree, nvars: np.int64, p_term: float = 0.5) -> None:
     """
     Subtree mutation.
 
@@ -85,15 +85,15 @@ def mutation_subtree(individual: Tree, max_vars: np.int64, p_term: float = 0.5) 
     l = individual.data[p1]['length']
     d = individual.data[p1]['depth']
 
-    individual.data = Tree.update_stats(np.concatenate((individual.data[:p - l + 1], create_grow(max_vars, d, l, p_term).data, individual.data[p + 1:])))
+    individual.data = Tree.update_stats(np.concatenate((individual.data[:p - l + 1], create_grow(nvars, d, l, p_term).data, individual.data[p + 1:])))
 
 
-def _rec_create_full(max_vars: np.int64, max_depth: np.int64) -> NDArray[Node]:
+def _rec_create_full(nvars: np.int64, max_depth: np.int64) -> NDArray[Node]:
     """Inner recursion function"""
     if max_depth <= 1:
         # Choose from terminal set
         if np.random.random() < 0.5:  # Variable
-            return np.array([Node(Var(np.random.randint(0, max_vars))).numpy()])
+            return np.array([Node(Var(np.random.randint(0, nvars))).numpy()])
         else:  # Constant
             # Biased toward positive: N(1,1)
             return np.array([Node(np.random.normal(1, 1)).numpy()])
@@ -102,17 +102,17 @@ def _rec_create_full(max_vars: np.int64, max_depth: np.int64) -> NDArray[Node]:
     operator = np.random.randint(0, NUM_OP)
     op_to_arr = np.array([Node(Op(operator)).numpy()])
     if Op.arity(operator) == 1:
-        return np.concatenate((_rec_create_full(max_vars, max_depth - 1), op_to_arr))
+        return np.concatenate((_rec_create_full(nvars, max_depth - 1), op_to_arr))
     else:
-        return np.concatenate((_rec_create_full(max_vars, max_depth - 1), _rec_create_full(max_vars, max_depth - 1), op_to_arr))
+        return np.concatenate((_rec_create_full(nvars, max_depth - 1), _rec_create_full(nvars, max_depth - 1), op_to_arr))
 
 
-def _rec_create_grow(max_vars: np.int64, max_depth: np.int64, max_length: np.int64, p_term: float = 0.5) -> NDArray[Node]:
+def _rec_create_grow(nvars: np.int64, max_depth: np.int64, max_length: np.int64, p_term: float = 0.5) -> NDArray[Node]:
     """Inner recursion function"""
     if max_depth <= 1 or max_length <= 1 or np.random.random() < p_term:
         # Choose from terminal set
         if np.random.random() < 0.5:  # Variable
-            return np.array([Node(Var(np.random.randint(0, max_vars))).numpy()])
+            return np.array([Node(Var(np.random.randint(0, nvars))).numpy()])
         else:  # Constant
             # Biased toward positive: N(1,1)
             return np.array([Node(np.random.normal(1, 1)).numpy()])
@@ -120,10 +120,10 @@ def _rec_create_grow(max_vars: np.int64, max_depth: np.int64, max_length: np.int
         operator = np.random.randint(0, NUM_OP)
         op_to_arr = np.array([Node(Op(operator)).numpy()])
         if Op.arity(operator) == 1:
-            return np.concatenate((_rec_create_grow(max_vars, max_depth - 1, max_length - 1, p_term), op_to_arr))
+            return np.concatenate((_rec_create_grow(nvars, max_depth - 1, max_length - 1, p_term), op_to_arr))
         else:
-            subtree1 = _rec_create_grow(max_vars, max_depth - 1, max_length - 1, p_term)
-            subtree2 = _rec_create_grow(max_vars, max_depth - 1, max_length - subtree1.size - 1, p_term)
+            subtree1 = _rec_create_grow(nvars, max_depth - 1, max_length - 1, p_term)
+            subtree2 = _rec_create_grow(nvars, max_depth - 1, max_length - subtree1.size - 1, p_term)
 
             # Randomize order to reduce bias, otherwise the left subtree
             # (the first one to be generated) is statistically bigger.
@@ -133,17 +133,17 @@ def _rec_create_grow(max_vars: np.int64, max_depth: np.int64, max_length: np.int
                 return np.concatenate((subtree2, subtree1, op_to_arr))
 
 
-def create_full(max_vars: np.int64, max_depth: np.int64) -> Tree:
+def create_full(nvars: np.int64, max_depth: np.int64) -> Tree:
     """
     Generate a subtree using the Full Method.
     """
     if max_depth == 0:
         raise ValueError(f"Depth must be greater than 0! Got {max_depth}")
 
-    return Tree(data=_rec_create_full(max_vars, max_depth))
+    return Tree(data=_rec_create_full(nvars, max_depth))
 
 
-def create_grow(max_vars: np.int64, max_depth: np.int64, max_length: np.int64, p_term: float = 0.5) -> Tree:
+def create_grow(nvars: np.int64, max_depth: np.int64, max_length: np.int64, p_term: float = 0.5) -> Tree:
     """
     Generate a subtree using the Grow Method.
 
@@ -160,4 +160,4 @@ def create_grow(max_vars: np.int64, max_depth: np.int64, max_length: np.int64, p
     if max_length == 0:
         raise ValueError(f"Length must be greater than 0! Got {max_length}")
 
-    return Tree(data=_rec_create_grow(max_vars, max_depth, max_length, p_term))
+    return Tree(data=_rec_create_grow(nvars, max_depth, max_length, p_term))
