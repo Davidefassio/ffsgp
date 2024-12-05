@@ -11,6 +11,7 @@ from collections.abc import Callable
 from threading import Thread
 from queue import Queue
 
+
 class Trainer:
     def __init__(self,
         x: NDArray[np.float64],
@@ -148,6 +149,7 @@ class Trainer:
         self.new_offspring_queue.put(offspring)
 
     # TODO: survivor selection + elitism (top 1%)
+    # TODO: limit bloat (hard limit?)
     #
     # Return best individual
     def train(self) -> Tree:
