@@ -4,6 +4,7 @@
 # Copyright (c) 2024 Davide Fassio
 
 from .tree import Tree
+from .utility_threads import get_nthreads
 
 import numpy as np
 from numpy.typing import NDArray
@@ -57,25 +58,7 @@ class Trainer:
         self.verbose = verbose
         
         # Parallelization
-        # Compute n_jobs following scikit-learn conventions
-        total_cores = os.cpu_count()
-        if total_cores is None:
-            raise RuntimeError("Unable to determine the number of CPU cores.")
-        
-        if n_jobs > 0:
-            self.n_jobs = n_jobs if n_jobs <= total_cores else total_cores
-        elif n_jobs < 0:
-            # Calculate cores to use based on the negative value
-            threads = total_cores + n_jobs + 1
-            if threads > 0:
-                self.n_jobs = threads
-            else:
-                raise ValueError(f"n_jobs={n_jobs} results in a non-positive number of threads ({threads}).")
-        else:
-            # Raise an error for invalid n_jobs=0 or other unexpected values
-            raise ValueError(f"Invalid value for n_jobs: {n_jobs}. Must be a different from 0.")
-
-        print(self.n_jobs)
+        self.n_jobs = get_nthreads(n_jobs)
         self.offspring_per_thread = int(self.offspring_size / self.n_jobs)
         self.new_offspring_queue = Queue()
 

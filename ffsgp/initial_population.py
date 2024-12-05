@@ -5,6 +5,7 @@
 
 from .genetic_operators import create_full, create_grow
 from .tree import Tree
+from .utility_threads import get_nthreads
 
 import numpy as np
 from threading import Thread
@@ -32,9 +33,12 @@ def init_pop_half(n: np.int64, nvars: np.int64, depth: np.int64, length: np.int6
     Half are generated using the Full Method, half with the Grow Method.
     Note: If n is odd, then generate one more with the Full Method.
     """
+    n_jobs = get_nthreads(n_jobs)
+
     if n_jobs == 1:
         return init_pop_full(n // 2 + n % 2, nvars, depth) + init_pop_grow(n // 2, nvars, depth, length, p_term)
-    else:
+    else:  
+        # In this function parallelization is it most two threads.
         result_queue = Queue()
         t1 = Thread(target=lambda rq, *args: rq.put(init_pop_full(*args)), args=(result_queue, n // 2 + n % 2, nvars, depth))
         t2 = Thread(target=lambda rq, *args: rq.put(init_pop_grow(*args)), args=(result_queue, n // 2, nvars, depth, length, p_term))
