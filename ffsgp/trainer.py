@@ -50,11 +50,11 @@ class Trainer:
         self.parent_selection = parent_selection  # Given a list of individual choose one to be a parent
 
         self.crossover = crossover  # Crossover function
-        self.mutations = mutations  # list of mutation functions
-        self.probs_mutation = probs_mutation
+        self.mutations = mutations  # List of mutation functions
+        self.probs_mutation = probs_mutation  # Probability to apply a mutation 
 
-        self.elitism = elitism  # percentage of population to carry over to next generation
-        
+        self.elitism = int(np.round(elitism * self.population_size))  # Convert the percentage to the actual number
+
         self.verbose = verbose
         
         # Parallelization
@@ -109,15 +109,18 @@ class Trainer:
 
         self.new_offspring_queue.put(offspring)
 
-    # TODO: survivor selection + elitism (top 1%)
     # TODO: limit bloat (hard limit?)
-    #
-    # Return best individual
     def train(self) -> Tree:
-        # Evaluate the initial population
+        """
+        Evolve a population to fit the training dataset.
+        Return the best individual ever found.
+        """
+        # Evaluate the initial population and sort it
         for t in self.curr_population:
             self.evaluate_tree(t)
-        
+        self.curr_population = sorted(self.curr_population, key=lambda t: t.fitness, reverse=True)
+        best_individual = self.curr_population[0]
+
         for gen in range(self.n_generations):
             # Generate offspring
             offspring = []
@@ -128,12 +131,19 @@ class Trainer:
                 t.join()
             for _ in range(self.n_jobs):
                 offspring.extend(self.new_offspring_queue.get())
-            offspring = sorted(offspring, key=lambda t: t.fitness, reverse=True)
+
+            # Elitism: meritocracy baby!
+            offspring.extend(self.curr_population[:self.elitism])
 
             # Survivor selection
+            offspring = sorted(offspring, key=lambda t: t.fitness, reverse=True)
             self.curr_population = offspring[:self.population_size]
+
+            # Hall of fame
+            if self.curr_population[0].fitness > best_individual.fitness:
+                best_individual = self.curr_population[0]
 
             # Print info
             self.vprint(f"Gen {gen}. Best: {self.curr_population[0].to_human()}, Fitness: {self.curr_population[0].fitness}")
 
-        return self.curr_population[0]
+        return best_individual
