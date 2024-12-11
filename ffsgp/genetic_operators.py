@@ -117,20 +117,25 @@ def _rec_create_grow(nvars: np.int64, max_depth: np.int64, max_length: np.int64,
             # Biased toward positive: N(1,1)
             return np.array([Node(np.random.normal(1, 1)).numpy()])
     else:  # Operator
-        operator = np.random.randint(0, NUM_OP)
+        # If max_length == 2 constraint to 1-arity operators
+        operator = np.random.randint(0, NUM_OP if max_length > 2 else IDX_TWO_ARITY)
         op_to_arr = np.array([Node(Op(operator)).numpy()])
+
         if Op.arity(operator) == 1:
             return np.concatenate((_rec_create_grow(nvars, max_depth - 1, max_length - 1, p_term), op_to_arr))
         else:
-            subtree1 = _rec_create_grow(nvars, max_depth - 1, max_length - 1, p_term)
-            subtree2 = _rec_create_grow(nvars, max_depth - 1, max_length - subtree1.size - 1, p_term)
+            # Generate left and right subtrees.
+            # The left must leave space for at least a terminal node in the right one, hence max_length-2.
+            # The right is also constrained by the already generated left one.
+            subtree_left = _rec_create_grow(nvars, max_depth - 1, max_length - 2, p_term)
+            subtree_right = _rec_create_grow(nvars, max_depth - 1, max_length - subtree_left.size - 1, p_term)
 
             # Randomize order to reduce bias, otherwise the left subtree
             # (the first one to be generated) is statistically bigger.
             if np.random.random() < 0.5:
-                return np.concatenate((subtree1, subtree2, op_to_arr))
+                return np.concatenate((subtree_left, subtree_right, op_to_arr))
             else:
-                return np.concatenate((subtree2, subtree1, op_to_arr))
+                return np.concatenate((subtree_right, subtree_left, op_to_arr))
 
 
 def create_full(nvars: np.int64, max_depth: np.int64) -> Tree:
@@ -148,11 +153,6 @@ def create_grow(nvars: np.int64, max_depth: np.int64, max_length: np.int64, p_te
     Generate a subtree using the Grow Method.
 
     p_term: the probability to select the node from the terminal set
-
-    Note: max_length is not strictly enforced.
-          When the creation function exhausts the "length budget",
-          any remaining open nodes are filled with terminal states.
-          As a result, the generated trees may slightly exceed max_length.
     """
     if max_depth == 0:
         raise ValueError(f"Depth must be greater than 0! Got {max_depth}")
