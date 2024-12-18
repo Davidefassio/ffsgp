@@ -24,6 +24,7 @@ A list of things that maybe (denoted by (?)) should be done, but I don't fully k
 - [ ] Implement some niching strategy to favor diversity
 - [ ] Implement early stopping conditions
 - [ ] try to enforce smoothness in the train domain (all correct values (no NaN) and smooth derivative)
+- [ ] constant values optimization with gradient descent
 - [ ] Understand how to deal with invalid trees, that return ```np.nan```, in the first generation, because they lower the initial genetic diversity (?)
 - [ ] Optimize tree ```__call__``` to cache results (?)
 - [X] Implement genetic operators: change of constants
