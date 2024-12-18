@@ -68,6 +68,9 @@ def mutation_constant(individual: Tree) -> None:
     for i, node in enumerate(individual.data):
         if node['f'] < 0 and node['name'] < 0:
             idxs.append(i)
+    
+    if not idxs:  # No constants to modify
+        return
 
     # Choose one and mutate its value
     individual.data[np.random.choice(idxs)]['value'] += np.random.normal()
