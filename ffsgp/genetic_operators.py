@@ -57,6 +57,22 @@ def mutation_single_point(individual: Tree, nvars: np.int64) -> None:
         individual.data[p]['value'] += np.random.normal()
 
 
+def mutation_constant(individual: Tree) -> None:
+    """
+    Mutation of constant values.
+
+    Selects a node of type constant in the tree (if aviable) and mutate its value.
+    """
+    # List all nodes of type constant    
+    idxs = []
+    for i, node in enumerate(individual.data):
+        if node['f'] < 0 and node['name'] < 0:
+            idxs.append(i)
+
+    # Choose one and mutate its value
+    individual.data[np.random.choice(idxs)]['value'] += np.random.normal()
+
+
 def mutation_hoist(individual: Tree) -> None:
     """
     Hoist Mutation.
