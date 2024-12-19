@@ -6,6 +6,39 @@ from time import time
 from functools import partial
 
 
+def main():
+    """
+    Train a population of trees to match a dataset!
+    """
+    # Load training dataset
+    dataset = np.load('data/problem_2.npz')
+
+    # Extract data and number of variables
+    x = dataset['x']
+    y = dataset['y']
+    nvars = x.shape[0]
+    
+    trainer = ffs.Trainer(x=x, y=y,
+                        initial_population=ffs.init_pop_ramp(1000, nvars, 6, 20, 0.2),
+                        offspring_mult=4,
+                        n_generations=50,
+                        fitness=lambda yt, yp: -ffs.mse(yt, yp),
+                        parent_selection=partial(ffs.tournament, n=2, p_fh=0.1),
+                        crossover=ffs.crossover_subtree,
+                        mutations=[partial(ffs.mutation_single_point, nvars=nvars), ffs.mutation_hoist, ffs.mutation_constant],
+                        probs_mutation=[0.1, 0.01, 0.5],
+                        max_depth=20,
+                        max_length=50,
+                        elitism=0.1,
+                        verbose=True,
+                        n_jobs=-1)
+
+    ft = trainer.train()
+
+    print(ft.to_human())
+    print(ft.fitness)
+
+
 def example1():
     """
     Train a population of trees to match a given formula!
@@ -102,5 +135,6 @@ def example2():
 
 
 if __name__ == '__main__':
+    main()
     example1()
     example2()
