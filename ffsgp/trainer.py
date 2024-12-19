@@ -26,6 +26,8 @@ class Trainer:
         crossover: Callable[[Tree, Tree],tuple[Tree, Tree]],
         mutations: list[Callable[[Tree], None]],
         probs_mutation: list[float],
+        max_depth: int | None = None,
+        max_length: int | None = None,
         elitism: float = 0,
         verbose: bool = False,
         n_jobs: int = 1) -> None:
@@ -52,6 +54,10 @@ class Trainer:
         self.crossover = crossover  # Crossover function
         self.mutations = mutations  # List of mutation functions
         self.probs_mutation = probs_mutation  # Probability to apply a mutation 
+        
+        # Set limits, if None set the to infinite
+        self.max_depth = max_depth if max_depth is not None else np.inf
+        self.max_length = max_depth if max_depth is not None else np.inf
 
         self.elitism = int(np.round(elitism * self.population_size))  # Convert the percentage to the actual number
 
@@ -100,16 +106,18 @@ class Trainer:
                 if m_values[1] < m_cum:
                     func(parent2)
                     m_values[1] = 2  # A value greater than the cumulative
-            
-            # Fitness evaluation
-            self.evaluate_tree(parent1)
-            self.evaluate_tree(parent2)
-            offspring.append(parent1)
-            offspring.append(parent2)
+
+            # Evaluate fitness and add to offspring if inside limits
+            if parent1.depth <= self.max_depth and parent1.length <= self.max_length:
+                self.evaluate_tree(parent1)
+                offspring.append(parent1)
+
+            if parent2.depth <= self.max_depth and parent2.length <= self.max_length:
+                self.evaluate_tree(parent2)
+                offspring.append(parent2)
 
         self.new_offspring_queue.put(offspring)
 
-    # TODO: limit bloat (hard limit?)
     def train(self) -> Tree:
         """
         Evolve a population to fit the training dataset.
