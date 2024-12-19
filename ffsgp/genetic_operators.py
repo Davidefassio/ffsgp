@@ -101,10 +101,11 @@ def mutation_subtree(individual: Tree, nvars: np.int64, p_term: float = 0.5) -> 
     p = np.random.randint(0, individual.data.size)
 
     # Get the length and depth of the subtree rooted in p
-    l = individual.data[p1]['length']
-    d = individual.data[p1]['depth']
+    l = individual.data[p]['length']
+    d = individual.data[p]['depth']
 
-    individual.data = Tree.update_stats(np.concatenate((individual.data[:p - l + 1], create_grow(nvars, d, l, p_term).data, individual.data[p + 1:])))
+    individual.data = np.concatenate((individual.data[:p - l + 1], create_grow(nvars, d, l, p_term).data, individual.data[p + 1:]))
+    Tree.update_stats(individual.data)
 
 
 def _rec_create_full(nvars: np.int64, max_depth: np.int64) -> NDArray[Node]:
