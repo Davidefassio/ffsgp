@@ -4,18 +4,6 @@ import numpy as np
 from time import time
 from functools import partial
 
-def params(iter):
-    if iter < 10:
-        return 10, 10
-    elif iter < 20:
-        return 10, 20
-    elif iter < 30:
-        return 20, 20
-    elif iter < 40:
-        return 20, 35
-    else:
-        return 20, 50
-
 
 def main():
     """
@@ -24,7 +12,7 @@ def main():
     list_of_goats = []
 
     # Load training dataset
-    for i in [3, 5, 7, 8]:
+    for i in range(1, 9):
         dataset = np.load(f"data/problem_{i}.npz")
 
         # Extract data and number of variables
@@ -33,27 +21,22 @@ def main():
 
         nvars = x.shape[0]
 
-        ngen = 50
-        if i > 6:
-            ngen = 80
-
         champions = []
-        for iter in range(50):
-            print(f"# P{i}: {iter} ###")
-            nd, nl = params(iter)
+        for it in range(50):
+            print(f"# P{i}: {it} ###")
 
             trainer = ffs.Trainer(x=x, y=y,
                                 normalize=True,
                                 initial_population=ffs.init_pop_ramp(1000, nvars, 6, 20, 0.2),
                                 offspring_mult=4,
-                                n_generations=ngen,
+                                n_generations=50,
                                 fitness=lambda yt, yp: ffs.r2(yt, yp),
                                 parent_selection=partial(ffs.tournament, n=2, p_fh=0.1),
                                 crossover=ffs.crossover_subtree,
                                 mutations=[partial(ffs.mutation_single_point, nvars=nvars), ffs.mutation_hoist, ffs.mutation_constant],
                                 probs_mutation=[0.1, 0.01, 0.5],
-                                max_depth=nd,
-                                max_length=nl,
+                                max_depth=20,
+                                max_length=50,
                                 elitism=0.1,
                                 verbose=False,
                                 n_jobs=-1)
@@ -61,13 +44,11 @@ def main():
             ft = trainer.train()
             champions.append(ft)
 
-            #print(ft.to_human())
-            #print(ft.fitness)
         goats = sorted(champions, key=lambda t: t.fitness, reverse=True)
         list_of_goats.append(goats)
 
     for n, log in enumerate(list_of_goats):
-        print(f"Problem {n}")
+        print(f"Problem {n + 1}")
         for g in log[:10]:
             print(f"{g.fitness}: {g.to_human()}")
         print()
