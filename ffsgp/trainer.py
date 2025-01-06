@@ -80,16 +80,6 @@ class Trainer:
         if self.verbose:
             print(string)
 
-    @staticmethod
-    def denormalize(t: Tree, mean: np.float64, std: np.float64):
-        # TODO: add np.add(np.mul(formula, stddev), mean)
-        # formula + std + mul + mean + add
-        # np.add(mean, np.mul(std, formula))
-        t.data = np.concat((t.data, Tree(std, mul, mean, add, update=False).data))
-        Tree.update_stats(t.data)
-
-
-
     def evaluate_tree(self, t: Tree) -> None:
         """
         Compute the fitness of a tree.
