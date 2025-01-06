@@ -38,7 +38,7 @@ def init_pop_half(n: np.int64, nvars: np.int64, depth: np.int64, length: np.int6
     if n_jobs == 1:
         return init_pop_full(n // 2 + n % 2, nvars, depth) + init_pop_grow(n // 2, nvars, depth, length, p_term)
     else:  
-        # In this function parallelization is it most two threads.
+        # In this function parallelization is at most two threads.
         result_queue = Queue()
         t1 = Thread(target=lambda rq, *args: rq.put(init_pop_full(*args)), args=(result_queue, n // 2 + n % 2, nvars, depth))
         t2 = Thread(target=lambda rq, *args: rq.put(init_pop_grow(*args)), args=(result_queue, n // 2, nvars, depth, length, p_term))

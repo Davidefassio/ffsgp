@@ -22,6 +22,7 @@ def example1():
     #  functools.partial is used to fix some parameters (used for parent_selection and mutations)
     #  n_jobs is the number of threads to run parallely. We use scikit-learn convention (look: utility_threads.py)
     trainer = ffs.Trainer(x=x, y=y,
+                          normalize=False,
                           initial_population=ffs.init_pop_ramp(1000, 1, 6, 20, 0.2),
                           offspring_mult=4,
                           n_generations=50,

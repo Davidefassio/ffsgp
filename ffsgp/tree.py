@@ -11,9 +11,10 @@ from numpy.typing import NDArray
 
 class Tree:
     def __init__(self, *args, data: NDArray[Node] | None = None, update: bool = True) -> None:
-        if data is not None:
+        # Allow to either: ...
+        if data is not None:  # ... provide an array of nodes in numpy format
             self.data = data
-        else:
+        else:  # ... provide as args the types of nodes
             self.data = np.array([Node(a).numpy() for a in args], dtype=Node)
 
         if update:  # Set length and depth
@@ -37,7 +38,7 @@ class Tree:
         stack = []
 
         for n in self.data:
-            stack.append(Node.call(n, stack, vvars))
+            stack.append(Node.call(n, stack, vvars))  # Note: the stack is modified by Node.call
 
         if isinstance(stack[0], np.ndarray):
             return stack[0]

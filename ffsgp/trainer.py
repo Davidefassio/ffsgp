@@ -42,10 +42,13 @@ class Trainer:
 
         self.x = x  # Training input data
         self.y = y  # Training output data
-        self.y_mean = y.mean()
-        self.y_std = y.std()
 
-        self.normalize = normalize  # Normalize the y to have mean 0 and standard deviation 1
+        # Save the statistics for the normalization step
+        self.y_mean = self.y.mean()
+        self.y_std = self.y.std()
+        
+        # If requested, normalize the y to have mean 0 and standard deviation 1
+        self.normalize = normalize
         if self.normalize:
             self.y = (self.y - self.y_mean) / self.y_std
 
@@ -62,7 +65,7 @@ class Trainer:
         self.mutations = mutations  # List of mutation functions
         self.probs_mutation = probs_mutation  # Probability to apply a mutation 
         
-        # Set limits, if None set the to infinite
+        # Set limits, if None set them to infinite
         self.max_depth = max_depth if max_depth is not None else np.inf
         self.max_length = max_length if max_length is not None else np.inf
 

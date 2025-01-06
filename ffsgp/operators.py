@@ -6,7 +6,7 @@
 import numpy as np
 from numpy.typing import NDArray
 
-
+# Note: we implemented log-abs instead of log because it is just a domain extension.
 class Op:
     def __init__(self, idx: int):
         self.idx = np.int64(idx)
