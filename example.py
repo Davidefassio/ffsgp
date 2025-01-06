@@ -1,42 +1,76 @@
 import ffsgp as ffs
-from ffsgp import Var, crossover_subtree
 
 import numpy as np
 from time import time
 from functools import partial
+
+def params(iter):
+    if iter < 10:
+        return 10, 10
+    elif iter < 20:
+        return 10, 20
+    elif iter < 30:
+        return 20, 20
+    elif iter < 40:
+        return 20, 35
+    else:
+        return 20, 50
 
 
 def main():
     """
     Train a population of trees to match a dataset!
     """
+    list_of_goats = []
+
     # Load training dataset
-    dataset = np.load('data/problem_2.npz')
+    for i in [3, 5, 7, 8]:
+        dataset = np.load(f"data/problem_{i}.npz")
 
-    # Extract data and number of variables
-    x = dataset['x']
-    y = dataset['y']
-    nvars = x.shape[0]
-    
-    trainer = ffs.Trainer(x=x, y=y,
-                        initial_population=ffs.init_pop_ramp(1000, nvars, 6, 20, 0.2),
-                        offspring_mult=4,
-                        n_generations=50,
-                        fitness=lambda yt, yp: -ffs.mse(yt, yp),
-                        parent_selection=partial(ffs.tournament, n=2, p_fh=0.1),
-                        crossover=ffs.crossover_subtree,
-                        mutations=[partial(ffs.mutation_single_point, nvars=nvars), ffs.mutation_hoist, ffs.mutation_constant],
-                        probs_mutation=[0.1, 0.01, 0.5],
-                        max_depth=20,
-                        max_length=50,
-                        elitism=0.1,
-                        verbose=True,
-                        n_jobs=-1)
+        # Extract data and number of variables
+        x = dataset['x']
+        y = dataset['y']
 
-    ft = trainer.train()
+        nvars = x.shape[0]
 
-    print(ft.to_human())
-    print(ft.fitness)
+        ngen = 50
+        if i > 6:
+            ngen = 80
+
+        champions = []
+        for iter in range(50):
+            print(f"# P{i}: {iter} ###")
+            nd, nl = params(iter)
+
+            trainer = ffs.Trainer(x=x, y=y,
+                                normalize=True,
+                                initial_population=ffs.init_pop_ramp(1000, nvars, 6, 20, 0.2),
+                                offspring_mult=4,
+                                n_generations=ngen,
+                                fitness=lambda yt, yp: ffs.r2(yt, yp),
+                                parent_selection=partial(ffs.tournament, n=2, p_fh=0.1),
+                                crossover=ffs.crossover_subtree,
+                                mutations=[partial(ffs.mutation_single_point, nvars=nvars), ffs.mutation_hoist, ffs.mutation_constant],
+                                probs_mutation=[0.1, 0.01, 0.5],
+                                max_depth=nd,
+                                max_length=nl,
+                                elitism=0.1,
+                                verbose=False,
+                                n_jobs=-1)
+
+            ft = trainer.train()
+            champions.append(ft)
+
+            #print(ft.to_human())
+            #print(ft.fitness)
+        goats = sorted(champions, key=lambda t: t.fitness, reverse=True)
+        list_of_goats.append(goats)
+
+    for n, log in enumerate(list_of_goats):
+        print(f"Problem {n}")
+        for g in log[:10]:
+            print(f"{g.fitness}: {g.to_human()}")
+        print()
 
 
 def example1():
@@ -44,9 +78,9 @@ def example1():
     Train a population of trees to match a given formula!
     """
     # Choose which formula to emulate
-    formula = ffs.Tree(2, Var(0), ffs.mul, 1/3, ffs.sub)
-    # formula = ffs.Tree(Var(0), ffs.abs, ffs.sin)
-    # formula = ffs.Tree(Var(0), 100, ffs.add, 0.5, ffs.pow, ffs.cos, ffs.log)
+    formula = ffs.Tree(2, ffs.Var(0), ffs.mul, 1/3, ffs.sub)
+    # formula = ffs.Tree(ffs.Var(0), ffs.abs, ffs.sin)
+    # formula = ffs.Tree(ffs.Var(0), 100, ffs.add, 0.5, ffs.pow, ffs.cos, ffs.log)
 
     x = np.linspace(-10, 10, 101).reshape(1, -1)
     y = formula(x)
@@ -87,11 +121,11 @@ def example2():
     y = np.linspace(-5, 5, 101)
     X, Y = np.meshgrid(x, y)
 
-    t1 = ffs.Tree(Var(0), Var(0), ffs.mul, Var(1), 2,
+    t1 = ffs.Tree(ffs.Var(0), ffs.Var(0), ffs.mul, ffs.Var(1), 2,
                   ffs.pow, ffs.add, 1 / 2, ffs.pow, ffs.sin)
-    t2 = ffs.Tree(2, Var(0), ffs.mul, 1/3, ffs.sub)
+    t2 = ffs.Tree(2, ffs.Var(0), ffs.mul, 1/3, ffs.sub)
 
-    t3, t4 = crossover_subtree(t1, t2)
+    t3, t4 = ffs.crossover_subtree(t1, t2)
 
     Z1 = t1(np.vstack((X.reshape(-1), Y.reshape(-1)))).reshape(X.shape)
     Z2 = t2(np.vstack((X.reshape(-1), Y.reshape(-1)))).reshape(X.shape)
@@ -136,5 +170,5 @@ def example2():
 
 if __name__ == '__main__':
     main()
-    example1()
-    example2()
+    #example1()
+    #example2()
