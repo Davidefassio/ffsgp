@@ -3,13 +3,13 @@
 # MIT License
 # Copyright (c) 2024 Davide Fassio
 
+from .operators import add, mul
 from .tree import Tree
 from .utility_threads import get_nthreads
 
 import numpy as np
 from numpy.typing import NDArray
 from collections.abc import Callable
-import os
 from threading import Thread
 from queue import Queue
 
@@ -18,6 +18,7 @@ class Trainer:
     def __init__(self,
         x: NDArray[np.float64],
         y: NDArray[np.float64],
+        normalize: bool,
         initial_population: list[Tree],
         offspring_mult: float,
         n_generations: int,
@@ -41,6 +42,12 @@ class Trainer:
 
         self.x = x  # Training input data
         self.y = y  # Training output data
+        self.y_mean = y.mean()
+        self.y_std = y.std()
+
+        self.normalize = normalize  # Normalize the y to have mean 0 and standard deviation 1
+        if self.normalize:
+            self.y = (self.y - self.y_mean) / self.y_std
 
         self.curr_population = initial_population
         self.population_size = len(self.curr_population)
@@ -57,7 +64,7 @@ class Trainer:
         
         # Set limits, if None set the to infinite
         self.max_depth = max_depth if max_depth is not None else np.inf
-        self.max_length = max_depth if max_depth is not None else np.inf
+        self.max_length = max_length if max_length is not None else np.inf
 
         self.elitism = int(np.round(elitism * self.population_size))  # Convert the percentage to the actual number
 
@@ -72,6 +79,16 @@ class Trainer:
         """Print if verbose is True."""
         if self.verbose:
             print(string)
+
+    @staticmethod
+    def denormalize(t: Tree, mean: np.float64, std: np.float64):
+        # TODO: add np.add(np.mul(formula, stddev), mean)
+        # formula + std + mul + mean + add
+        # np.add(mean, np.mul(std, formula))
+        t.data = np.concat((t.data, Tree(std, mul, mean, add, update=False).data))
+        Tree.update_stats(t.data)
+
+
 
     def evaluate_tree(self, t: Tree) -> None:
         """
@@ -153,5 +170,11 @@ class Trainer:
 
             # Print info
             self.vprint(f"Gen {gen}. Best: {self.curr_population[0].to_human()}, Fitness: {self.curr_population[0].fitness}")
-
+        
+        if self.normalize:
+            # Add the denormalization step:
+            # np.add(np.mul("formula", stddev), mean)
+            best_individual.data = np.concat((best_individual.data, Tree(self.y_std, mul, self.y_mean, add, update=False).data))
+            Tree.update_stats(best_individual.data)
+            
         return best_individual
